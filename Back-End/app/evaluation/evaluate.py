@@ -3,6 +3,8 @@ import os
 import pandas as pd
 from datasets import Dataset
 
+import time
+import numpy as np
 # For generating evaluation results
 from ragas import evaluate
 from ragas.metrics import (
@@ -71,17 +73,33 @@ def run_evaluation(data_path: str, output_csv: str):
                 dataset=dataset,
                 metrics=metrics,
                 llm=ragas_llm,
-                embeddings=ragas_embeddings,
+                embeddings=ragas_embeddings
             )
             
-            # Extract scores from result dictionary safely
-            scores = {m.name: result.get(m.name, 0.0) for m in metrics}
+            # Extract scores safely from the EvaluationResult object and aggregate array if needed
+            scores = {}
+            for m in metrics:
+                try:
+                    val = result[m.name]
+                    # If the metric returned an item-level list/array instead of a single scalar
+                    if isinstance(val, (list, tuple, np.ndarray)):
+                        # Clean out NaNs and calculate mean
+                        cleaned = [v for v in val if v is not None and not np.isnan(v)]
+                        scores[m.name] = float(np.mean(cleaned)) if cleaned else 0.0
+                    else:
+                        scores[m.name] = float(val) if val is not None and not np.isnan(val) else 0.0
+                except Exception:
+                    scores[m.name] = 0.0
         except Exception as e:
             print(f"RAGAs evaluation failed for {cfg['name']}: {e}")
             scores = {m.name: 0.0 for m in metrics}
 
         scores["Configuration"] = cfg["name"]
         all_results.append(scores)
+        
+        # Add a sleep to prevent aggressive Groq rate limit exhaustion (429 Timeouts)
+        print("Sleeping for 15 seconds to respect Groq API Rate Limits...")
+        time.sleep(15)
 
     # Save outputs
     df = pd.DataFrame(all_results)
@@ -100,7 +118,7 @@ def run_evaluation(data_path: str, output_csv: str):
 
 if __name__ == "__main__":
     pwd = os.path.dirname(os.path.abspath(__file__))
-    data_file = os.path.abspath(os.path.join(pwd, "../../data/eval/ground_truth.json"))
+    data_file = os.path.abspath(os.path.join(pwd, "ground_truth.json"))
     out_file = os.path.abspath(os.path.join(pwd, "../../data/eval/ablation_results.csv"))
         
     print(f"Loading Ground Truth definitions from: {data_file}")

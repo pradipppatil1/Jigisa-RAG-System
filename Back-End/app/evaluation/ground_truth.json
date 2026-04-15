@@ -1,0 +1,26 @@
+[
+  {
+    "query": "What is the company's leave policy for employees?", 
+    "ground_truth": "Employees are entitled to 20 days of paid sick leave and 15 days of casual leave annually.", 
+    "user_role": "employee", 
+    "expected_context": ["Employees are entitled to 20 days of paid sick leave..."]
+  },
+  {
+    "query": "What was the revenue for Q3 2024?", 
+    "ground_truth": "The revenue for Q3 2024 was $12.4 million.", 
+    "user_role": "finance", 
+    "expected_context": ["The revenue for Q3 2024 was $12.4 million."]
+  },
+  {
+    "query": "What architecture pattern is used for the transaction service?", 
+    "ground_truth": "We use an event-driven microservices architecture for the transaction service.", 
+    "user_role": "engineering", 
+    "expected_context": ["We use an event-driven microservices architecture..."]
+  },
+  {
+    "query": "What are the primary colors in our brand guidelines?", 
+    "ground_truth": "Our primary brand colors are Navy Blue, Emerald Green, and White.", 
+    "user_role": "marketing", 
+    "expected_context": ["Our primary brand colors are Navy Blue, Emerald Green, and White."]
+  }
+]

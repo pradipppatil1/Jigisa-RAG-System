@@ -1,0 +1,32 @@
+[project]
+name = "back-end"
+version = "0.1.0"
+description = "FinBot backend for data ingestion and RAG"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "python-multipart",
+    "docling",
+    "langchain",
+    "langchain-docling",
+    "langchain-huggingface",
+    "langchain-qdrant",
+    "pydantic-settings",
+    "python-dotenv",
+    "docling-core",
+    "docling-hierarchical-pdf",
+    "sentence-transformers",
+    "semantic-router",
+    "sqlalchemy",
+    "pymysql",
+    "cryptography",
+    "langchain-groq",
+    "PyJWT",
+    "bcrypt",
+    "email-validator",
+    "ragas",
+    "datasets",
+    "pandas"
+]

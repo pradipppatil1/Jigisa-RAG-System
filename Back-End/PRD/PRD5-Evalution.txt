@@ -1,0 +1,54 @@
+# Product Requirements Document (PRD): Evaluation Pipeline for FinBot
+
+## 1. Project Overview
+**Project Name:** FinBot - Evaluation Module
+**Feature Name:** Ground-Truth Accuracy & Safety Evaluation Pipeline
+**Description:** Build a robust, automated evaluation pipeline using the `ragas` library to rigorously measure the accuracy, faithfulness, and precision of the FinBot RAG system. This includes constructing a diverse golden dataset and executing a systematic ablation study to measure the impact of distinct architectural modules (Routing, RBAC, Guardrails) on retrieval and generation quality.
+
+## 2. Objectives
+- Quantitatively evaluate the RAG pipeline using industry-standard `ragas` metrics.
+- Ensure all 4 core business domains (Finance, Engineering, Marketing, HR/General) are adequately tested.
+- Isolate and measure the specific value contributed by Semantic Routing, RBAC filters, and Guardrails via an ablation study.
+- Establish a repeatable test script that can be used to monitor pipeline health over time.
+
+## 3. Data Requirements: Golden Dataset
+- **Total Q&A Pairs:** A minimum of 40 ground-truth pairs.
+- **Coverage:** Must be distributed equitably across all document collections:
+  - Finance
+  - Engineering
+  - Marketing
+  - HR / General
+- **Question Profiles:**
+  - Standard, well-behaved factual queries.
+  - Cross-role adversarial queries (e.g., trying to access Finance metrics as an HR user).
+  - Safety boundary queries (injection, off-topic).
+- **Dataset Format:** A structured JSON or CSV format containing the following fundamental schema:
+  - `question`: The user query to execute.
+  - `ground_truth`: The ideal, expected proper answer.
+  - `user_role`: The assumed role of the querying user.
+  - `expected_context` (Optional): Key data expected in retrieval.
+
+## 4. Evaluation Metrics (RAGAs)
+The script must natively track and report the following `ragas` metrics:
+1. **faithfulness:** Assesses whether the generated answer is strictly grounded in the retrieved context, penalizing hallucinations.
+2. **answer_relevancy:** Measures whether the LLM directly addresses the user's implicit intent without excessive wandering.
+3. **context_precision:** Evaluates if the most pertinent chunks were ranked highest during Qdrant retrieval.
+4. **context_recall:** Validates if the Retrieval process successfully pulled all the necessary information to reconstruct the ground truth.
+5. **answer_correctness:** Judges semantic equivalence between the final generated answer and the predefined ground truth.
+
+## 5. Ablation Study Methodology
+To demonstrate the cumulative value of the advanced architecture, the automated evaluation will be executed and recorded across four progressively advanced configurations:
+
+1. **Base (Naïve RAG):** Standard dense vector retrieval and unchecked LLM generation. No semantic routing or metadata scoping.
+2. **+Routing:** Base RAG augmented with Semantic Routing to restrict retrieval index targeting based on query intent.
+3. **+RBAC:** Base + Router + Qdrant Metadata filtering firmly scoped by the `user_role` mapping.
+4. **+Guardrails:** The complete robust pipeline including input validation (off-topic, PII) and output validation (checking grounding and hallucinated numbers).
+
+## 6. Expected Technical Output
+The final evaluation deliverable must include:
+1. **Evaluation Scripts:** 
+   - Code (e.g., `evaluate.py` or a dedicated Jupyter notebook) capable of iterating over the dataset, injecting into the RAG pipeline models, running `ragas` metrics, and gracefully managing failover conditions.
+2. **Dataset:**
+   - The compiled `ground_truth.json` or `ground_truth.csv` structured dataset accessible in the repository.
+3. **Result Comparison Table:**
+   - A final aggregated output tabular report showcasing metric scores (`faithfulness`, `context_precision`, etc.) measured systematically across the 4 ablation stages.

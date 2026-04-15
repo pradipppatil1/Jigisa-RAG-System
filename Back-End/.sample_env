@@ -1,0 +1,13 @@
+GROQ_API_KEY=<<Your API Key>>
+GROQ_MODEL=llama-3.1-8b-instant
+GUARDRAILS_GROQ_MODEL=llama-3.1-8b-instant
+
+QDRANT_URL=http://localhost:6333
+EMBEDDING_MODEL_NAME=sentence-transformers/all-MiniLM-L6-v2
+COLLECTION_NAME=finbot_knowledge
+RAW_DATA_PATH=./data/raw
+
+MYSQL_DATABASE_URL=mysql+pymysql://<<user>>:<<password>>@localhost:3306/jigisabot
+
+JWT_SECRET_KEY=<<Your JWT SECRET>>
+JWT_EXPIRY_HOURS=24

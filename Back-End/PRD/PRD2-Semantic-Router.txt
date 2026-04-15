@@ -1,0 +1,129 @@
+# Product Requirements Document (PRD): Semantic Router for FinBot
+
+## 1. Project Overview
+**Project Name:** FinBot - Semantic Router Component
+**Feature Name:** Semantic Query Routing & RBAC Intersection
+**Description:** A core component of the FinBot RAG system designed to intelligently classify user queries into specific departmental or general categories. This ensures that the system retrieves information from the most relevant knowledge base while simultaneously enforcing role-based access control (RBAC) at the routing layer.
+
+## 2. Objectives
+- Improve retrieval precision by targeting specific document collections based on query intent.
+- Reduce computational overhead by avoiding broad searches across irrelevant indices.
+- Provide a first-line defense for RBAC by intercepting unauthorized cross-departmental queries.
+- Return structured classification results including route name and confidence score.
+- Maintain a clear audit trail of how user queries are routed and filtered.
+
+## 3. Technical Requirements
+
+### 3.1. Infrastructure & Libraries
+- **Language:** Python
+- **Primary Library:** `semantic-router`
+- **Embedding Model:** Must be consistent with the one used for document ingestion (e.g., OpenAI, HuggingFace, or Cohere).
+
+### 3.2. Route Definitions
+At least five distinct semantic routes must be implemented:
+
+1. **finance_route:**
+   - **Intent:** Queries related to financial performance, budgets, investor relations, and financial reports.
+   - **Sample Utterances (10+):**
+     - "What was the revenue for Q3 2024?"
+     - "Show me the latest budget allocations for the R&D department."
+     - "Tell me about our investor relations strategy."
+     - "How much did we spend on marketing last year?"
+     - "Give me a summary of the annual report FY2024."
+     - "What are the current financial projections for next quarter?"
+     - "Are there any updates on dividends for shareholders?"
+     - "List all major expenses recorded in the audit."
+     - "What is the net profit margin for this fiscal year?"
+     - "Find details about the Q3 earnings call summary."
+
+2. **engineering_route:**
+   - **Intent:** Queries about system architecture, API documentation, technical specifications, and incident logs.
+   - **Sample Utterances (10+):**
+     - "How do I access the internal API?"
+     - "Explain the current system architecture."
+     - "Where are the deployment runbooks stored?"
+     - "What was the root cause of the last system outage?"
+     - "Show me the technical specs for the indexing service."
+     - "How do I onboard a new microservice?"
+     - "What database are we using for high-concurrency tasks?"
+     - "Find the documentation for the auth-service."
+     - "List the steps for emergency rollback."
+     - "Provide details on the Kubernetes cluster configuration."
+
+3. **marketing_route:**
+   - **Intent:** Queries about brand guidelines, marketing campaigns, market research, and competitor analysis.
+   - **Sample Utterances (10+):**
+     - "What are the official brand colors?"
+     - "Give me an overview of the 'Spring Surge' campaign."
+     - "How is our market share compared to Competitor X?"
+     - "Show me the latest market research findings."
+     - "What is the primary target audience for our new product?"
+     - "List the active marketing channels for Q4."
+     - "Where can I find the brand logo assets?"
+     - "Summarize the competitor analysis report."
+     - "What is the ROI on our social media campaigns?"
+     - "Tell me about our brand positioning strategy."
+
+4. **hr_general_route:**
+   - **Intent:** Queries regarding company policies, leave, benefits, HR handbooks, and general company information.
+   - **Sample Utterances (10+):**
+     - "What is the company's leave policy?"
+     - "How do I apply for health insurance benefits?"
+     - "Where is the HR handbook located?"
+     - "What are the company's core values?"
+     - "Show me the code of conduct document."
+     - "How many sick days are allowed per year?"
+     - "What is the policy for remote work?"
+     - "Tell me about the employee referral program."
+     - "When is the next company-wide meeting?"
+     - "What is the procedure for reporting a grievance?"
+
+5. **cross_department_route:**
+   - **Intent:** Broad or multi-faceted queries that might require information from multiple departments.
+   - **Sample Utterances (10+):**
+     - "Give me a general overview of the company status."
+     - "What major updates happened across all departments this month?"
+     - "Are there any cross-departmental initiatives currently active?"
+     - "Tell me everything about the new product launch from both design and marketing perspectives."
+     - "How do departmental budgets align with our engineering goals?"
+     - "Show me general news and financial highlights."
+     - "I have a broad question about company operations."
+     - "List all ongoing projects across the organization."
+     - "What are the key priorities for this fiscal year overall?"
+     - "Summarize recent reports from all sectors."
+
+### 3.3. RBAC Intersection Logic
+The routing service must intersect the router's output with the user's role to determine if the query can proceed.
+
+- **Role Matrix:**
+  - `employee`: Accessible: `hr_general_route`
+  - `finance`: Accessible: `hr_general_route`, `finance_route`
+  - `engineering`: Accessible: `hr_general_route`, `engineering_route`
+  - `marketing`: Accessible: `hr_general_route`, `marketing_route`
+  - `c_level`: Accessible: **ALL routes** (including `cross_department_route`)
+
+- **Enforcement & Output:**
+  - **Success:** If authorized, return: `route_name`, `confidence`, `is_authorized: True`.
+  - **Failure:** If route is not allowed for the user role, return: `is_authorized: False` and a polite "access denied" message.
+  - **Refusal Message Template:** "I'm sorry, but you do not have authorization to access [department] records. Please contact the [department] for assistance."
+
+### 3.3.1 Current Implementation Status
+**STATUS: NOT IMPLEMENTED.** 
+While the underlying semantic router logic exists in `app/routing`, it is currently isolated. It is **not being intersected** with the user's active role at query time within a central API endpoint. The logic to gracefully reject cross-department prompts before vector retrieval has yet to be executed in an active RAG request lifecycle.
+
+### 3.4. Logging & Auditability
+For every query, the system must log the following fields:
+- `timestamp`: Time of the query.
+- `user_role`: The role assigned to the user.
+- `route_selected`: The route classified by the Semantic Router.
+- `query`: The original user query.
+- `confidence`: The router's confidence score.
+- `is_authorized`: Boolean indicating the result of the RBAC check.
+
+## 4. Acceptance Criteria
+- [ ] 100% of defined routes have at least 10 high-quality utterances.
+- [ ] The Semantic Router correctly identifies the intended route with high accuracy (>80% on test set).
+- [ ] RBAC intersection is verified: `engineering` users are blocked from `finance_route`.
+- [ ] `c_level` users can successfully access all 5 routes.
+- [ ] Unauthorized attempts result in a polite, informative refusal message instead of a generic error.
+- [ ] All queries, routes, and roles are correctly logged in the backend database/logs.

@@ -1,0 +1,75 @@
+Product Requirement Document: PRD-1 Data Ingestion Pipeline
+
+1. Overview
+The Data Ingestion Pipeline is responsible for transforming raw multi-format documents (PDF, Markdown, Doc) into structured, embedded chunks stored in a vector database (Qdrant). It ensures that document structure is preserved and that each chunk is tagged with appropriate metadata for Role-Based Access Control (RBAC).
+
+2. Data Sources & Collections
+The system supports four primary document collections:
+- General: HR handbooks, leave policies, company FAQs, code of conduct (Accessible by: All roles).
+- Finance: Annual reports, Q3 earnings, budget allocations (Accessible by: finance, c_level).
+- Engineering: System architecture, API references, runbooks, onboarding guides (Accessible by: engineering, c_level).
+- Marketing: Campaign reports, brand guidelines, competitor analysis (Accessible by: marketing, c_level).
+
+3. Technical Requirements: Parsing & Chunking (Docling)
+- Library: Use `Docling` for parsing to maintain structural awareness (tables, headings, lists).
+- Hierarchical Chunking:
+  - Document -> Section -> Subsection -> Paragraph / Table / Code block.
+  - Leaf chunks (paragraphs/tables) must maintain a relationship to their parent sections.
+  - Parent-level summaries should be stored or associated with leaf chunks to provide context during retrieval.
+- Special Handling:
+  - Tables: Must be parsed as structured objects, not flattened text where possible, to preserve row/column relationships.
+  - Code Blocks: Must be identified and stored as 'code' type chunks.
+
+4. Metadata Schema
+Each chunk stored in Qdrant MUST include the following metadata fields:
+- source_document: Filename (e.g., "FY2024_Annual_Report.pdf").
+- collection: One of ['general', 'finance', 'engineering', 'marketing'].
+- access_roles: List of authorized roles (e.g., ["finance", "c_level"]).
+- section_title: The nearest parent heading.
+- page_number: The physical page number in the source file.
+- chunk_type: One of ['text', 'table', 'heading', 'code'].
+- parent_chunk_id: UUID of the parent section chunk for hierarchical traversal.
+
+5. Vector Store: Qdrant
+- Configuration:
+  - Use Cosine Similarity for embeddings.
+  - Payload indexing: Create indexes on 'collection' and 'access_roles' fields to ensure high-performance RBAC filtering.
+- Indexing Policy:
+  - On document addition: Trigger parsing, chunking, embedding, and upsert to Qdrant.
+
+6. Admin Panel Requirements (Dynamic Management)
+The system must provide an Admin Interface to manage the knowledge base, calling the following Backend API Endpoints:
+
+- POST /api/v1/ingest/upload: 
+  - Parameters: file (Binary), collection (String).
+  - Description: Triggers parsing, chunking, and indexing in Qdrant.
+- DELETE /api/v1/ingest/document/{filename}:
+  - Parameters: filename (String).
+  - Description: Removes all associated chunks from the vector database.
+- GET /api/v1/ingest/status:
+  - Description: Returns a list of all ingested documents and their current status (Processing, Indexed, Failed).
+
+Admin Panel UI Features:
+- Add Document:
+  - Upload interface (PDF/Doc/MD).
+  - Metadata Assignment: Admin selects the 'collection'.
+  - Automated Role Mapping: System automatically assigns 'access_roles' based on the selected 'collection'.
+- Remove Document:
+  - Delete document by filename.
+  - Automated Cleanup: Remove all associated chunks from Qdrant using a metadata filter (source_document == target_file).
+- Status Monitoring:
+  - Show ingestion status (Pending, Processing, Indexed, Failed).
+
+7. RBAC Enforcement at Ingestion
+- Metadata Injection: The 'access_roles' field is the ground truth for security. 
+- Validation: Ensure no document is ingested without an 'access_roles' field.
+- Default Roles:
+  - general -> ["employee", "finance", "engineering", "marketing", "c_level"]
+  - finance -> ["finance", "c_level"]
+  - engineering -> ["engineering", "c_level"]
+  - marketing -> ["marketing", "c_level"]
+
+8. Success Metrics
+- Parsing Accuracy: Correct identification of tables and headers.
+- Retrieval Context: Metadata filters successfully isolate documents based on user roles.
+- Ingestion Speed: Time taken from upload to searchable status.

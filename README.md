@@ -23,6 +23,74 @@ The backend manages the complex AI pipeline, enforcing strict access controls an
 
 ---
 
+## 🏗️ System Architecture
+
+The following diagram illustrates the end-to-end flow of the Jigisa RAG System, detailing document ingestion, user authentication, semantic routing, and the retrieval generation process.
+
+```mermaid
+graph TD
+    %% Frontend
+    subgraph Frontend [Next.js User Interface]
+        UI[Chat Interface & Admin Portal]
+        State[React Context / Authentication]
+        UI --> State
+    end
+
+    %% Backend Services
+    subgraph Backend [FastAPI Backend Server]
+        API_GW[API Router & Auth Middleware]
+        Guard_In[Input Guardrails / NeMo]
+        Router[Semantic Router Pipeline]
+        Guard_Out[Output Guardrails / NeMo]
+        Evaluation[RAGAS Evaluation Module]
+    end
+
+    %% AI Models
+    subgraph Models [AI & Language Models]
+        LLM[Groq LLM Engine]
+        Embed[HuggingFace Embeddings]
+    end
+
+    %% Databases
+    subgraph Databases [Data Storage]
+        MySQL[(MySQL DB<br/>Auth & Session History)]
+        Qdrant[(Qdrant Vector DB<br/>Embedded Document Chunks)]
+    end
+
+    %% Document Ingestion
+    subgraph Ingestion [Document Processing]
+        Docling[Docling Hierarchical Parser]
+        Chunker[LangChain Document Splitter]
+    end
+
+    %% Processing Flow
+    UI -->|1. User Login / Query| API_GW
+    API_GW --> MySQL
+    API_GW -->|2. Validates Request| Guard_In
+    Guard_In --> Router
+    
+    %% Routing & Retrieval
+    Router -->|3. Intent Classification| Embed
+    Embed --> Router
+    Router -->|4. Role-Based Retrieval| Qdrant
+    Qdrant -->|5. Retrieved Context| LLM
+    LLM --> Guard_Out
+    Guard_Out -->|6. Validated Response| API_GW
+    API_GW -->|7. Display| UI
+
+    %% Ingestion Flow
+    UI -.->|Admin Uploads PDF| Docling
+    Docling -.-> Chunker
+    Chunker -.-> Embed
+    Embed -.-> Qdrant
+
+    %% Evaluation Flow
+    Evaluation -.->|Ablation Tests| Router
+    Evaluation -.->|Offline Metrics| MySQL
+```
+
+---
+
 ## 🛠️ Local Setup Instructions
 
 Follow these clear steps to run the complete environment on your local machine.

@@ -6,7 +6,7 @@ import { fetchWithAuth } from '@/lib/api';
 import Link from 'next/link';
 
 export default function EvaluationsPage() {
-  const { user, token, logout } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   
   const [evalData, setEvalData] = useState<any[]>([]);
@@ -14,11 +14,11 @@ export default function EvaluationsPage() {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    if (!token) return router.push('/');
-    if (user && user.role !== 'c_level') {
+    if (!user) return router.push('/');
+    if (user.role !== 'c_level') {
       router.push('/chat'); // Restrict
     }
-  }, [user, token, router]);
+  }, [user, router]);
 
   useEffect(() => {
     if (user?.role === 'c_level') {

@@ -1,24 +1,32 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status, Request
 import jwt
 
 from app.config.settings import settings
 from app.auth.schemas import CurrentUser
 from app.auth.utils import ALGORITHM
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
-
-def get_current_user(token: str = Depends(oauth2_scheme)) -> CurrentUser:
+def get_current_user(request: Request) -> CurrentUser:
     """
-    Dependency that decodes the JWT token and returns the CurrentUser.
-    Raises HTTPException 401 if invalid/expired.
+    Dependency that extracts access_token from HttpOnly cookies.
+    Enforces strict anti-CSRF matching on mutation HTTP methods.
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
     )
+    
+    token = request.cookies.get("access_token")
+    if not token:
+        raise credentials_exception
+        
+    # Enforce CSRF validation for any state-changing HTTP request
+    if request.method in ["POST", "PUT", "DELETE", "PATCH"]:
+        header_csrf = request.headers.get("X-CSRF-Token")
+        cookie_csrf = request.cookies.get("csrf_token")
+        if not header_csrf or not cookie_csrf or header_csrf != cookie_csrf:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="CSRF token validation failed, potential attack mitigated.")
+
     try:
         payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[ALGORITHM])
         user_id: int = payload.get("user_id")
@@ -40,8 +48,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> CurrentUser:
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired",
-            headers={"WWW-Authenticate": "Bearer"},
+            detail="Token has expired"
         )
     except jwt.PyJWTError: # Catch all PyJWT decoding errors
         raise credentials_exception

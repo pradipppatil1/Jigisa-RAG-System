@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 import jwt
 import bcrypt
+import secrets
 
 from app.config.settings import settings
 
@@ -25,9 +26,17 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(hours=settings.JWT_EXPIRY_HOURS)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_EXPIRY_MINUTES)
     
     to_encode.update({"exp": expire, "iat": datetime.now(timezone.utc)})
     
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+def create_refresh_token() -> str:
+    """Generate a secure random string for use as a refresh token."""
+    return secrets.token_hex(32)
+
+def create_csrf_token() -> str:
+    """Generate a secure random string for use as a CSRF token."""
+    return secrets.token_urlsafe(32)

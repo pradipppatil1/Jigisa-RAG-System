@@ -16,7 +16,7 @@ type Message = {
 };
 
 export default function ChatPage() {
-  const { user, token, logout } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [query, setQuery] = useState('');
@@ -35,12 +35,12 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
-    if (!token) {
+    if (!user) {
        router.push('/');
     } else {
        loadSessions();
     }
-  }, [token, router]);
+  }, [user, router]);
 
   const loadSessionDetails = async (sessionId: string) => {
     try {

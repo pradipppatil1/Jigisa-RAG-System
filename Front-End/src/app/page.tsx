@@ -32,7 +32,7 @@ export default function LoginPage() {
         body: JSON.stringify({ username, password })
       });
 
-      login(res.access_token, res.user);
+      login(res.user);
 
       if (res.user.role === 'c_level') {
         router.push('/chat'); // even C-Level uses chat mostly, or we could redirect to admin. Let's just go to chat and they can click admin.

@@ -20,7 +20,8 @@ class Settings(BaseSettings):
     
     # JWT Auth
     JWT_SECRET_KEY: str
-    JWT_EXPIRY_HOURS: int = Field(default=24)
+    JWT_EXPIRY_MINUTES: int = Field(default=15)
+    REFRESH_TOKEN_EXPIRY_DAYS: int = Field(default=7)
     
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

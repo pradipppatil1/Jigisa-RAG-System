@@ -9,7 +9,7 @@ const AVAILABLE_ROLES = ["employee", "finance", "engineering", "marketing", "c_l
 const AVAILABLE_COLLECTIONS = ["general", "finance", "engineering", "marketing", "hr"];
 
 export default function AdminPage() {
-  const { user, token, logout } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   
   // Notification states
@@ -39,11 +39,11 @@ export default function AdminPage() {
   const [delErrorMsg, setDelErrorMsg] = useState('');
 
   useEffect(() => {
-    if (!token) return router.push('/');
-    if (user && user.role !== 'c_level') {
+    if (!user) return router.push('/');
+    if (user.role !== 'c_level') {
       router.push('/chat'); // Restrict
     }
-  }, [user, token, router]);
+  }, [user, router]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();

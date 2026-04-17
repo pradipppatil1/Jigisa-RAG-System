@@ -38,5 +38,6 @@ def init_db():
     import app.models.guardrail_log  # noqa: F401
     import app.models.user  # noqa: F401
     import app.models.chat_history  # noqa: F401
+    import app.models.refresh_token # noqa: F401
     Base.metadata.create_all(bind=engine)
 

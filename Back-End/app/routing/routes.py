@@ -85,21 +85,170 @@ marketing_route = Route(
 hr_general_route = Route(
     name="hr_general_route",
     utterances=[
-        "What is the company's leave policy?",
-        "How do I apply for health insurance benefits?",
-        "Where is the HR handbook located?",
-        "What are the company's core values?",
-        "Show me the code of conduct document.",
-        "How many sick days are allowed per year?",
-        "What is the policy for remote work?",
-        "Tell me about the employee referral program.",
-        "When is the next company-wide meeting?",
-        "What is the procedure for reporting a grievance?",
-        "How do I submit a reimbursement request?",
-        "What holidays does the company observe?",
+        # Onboarding & Benefits
+        "What happens on my first day in the company?",
+        "Explain onboarding process step by step",
+        "What documents are required before joining?",
+        "Do we get a mentor during onboarding?",
+        "What benefits does the company provide?",
+        "Is there health insurance for employees?",
+        "Does insurance cover family members?",
+        "What wellness programs are available?",
+        "Do we get gym reimbursement?",
+        "Tell me about employee referral program",
+        "What perks do employees get?",
+        "Explain company benefits",
+
+        # Leave Policy
+        "How many leaves do I get per year?",
+        "What is sick leave policy?",
+        "Can I carry forward my leaves?",
+        "What is maternity leave policy?",
+        "Do we get paternity leave?",
+        "What is bereavement leave?",
+        "How do I apply for leave?",
+        "What happens if leave is rejected?",
+        "What is leave without pay?",
+        "How many vacation days do I get?",
+        "Can I take unpaid leave?",
+        "What is annual leave entitlement?",
+
+        # Work Hours & Attendance
+        "What are working hours?",
+        "Is flexible timing allowed?",
+        "What are core working hours?",
+        "How is attendance tracked?",
+        "What happens if I am late?",
+        "Is overtime paid?",
+        "Can I work beyond office hours?",
+        "How do I log work hours?",
+        "What is shift timing policy?",
+        "Do we have time tracking tools?",
+
+        # Code of Conduct
+        "What is company code of conduct?",
+        "What behavior is expected at workplace?",
+        "Is discrimination allowed?",
+        "What is harassment policy?",
+        "How do I report harassment?",
+        "What is dress code policy?",
+        "Can I wear casual clothes?",
+        "What is policy on alcohol at workplace?",
+        "What are workplace ethics rules?",
+
+        # Health & Safety
+        "What are safety guidelines in office?",
+        "How to report workplace accident?",
+        "Do we have mental health support?",
+        "What is employee assistance program?",
+        "Are there wellness programs?",
+        "What to do in emergency situation?",
+        "Is fire drill mandatory?",
+
+        # IT & Equipment Policy
+        "What equipment will I get from company?",
+        "Can I use office laptop for personal use?",
+        "What is acceptable use policy?",
+        "Can I install my own software?",
+        "Is VPN mandatory?",
+        "What is BYOD policy?",
+        "How do I raise IT support ticket?",
+        "What happens to laptop after resignation?",
+        "How do I contact IT support?",
+
+        # Payroll & Compensation
+        "What is salary structure?",
+        "When is salary credited?",
+        "What deductions are there in salary?",
+        "How is bonus calculated?",
+        "What is PF contribution?",
+        "How to report salary discrepancy?",
+        "When do salary increments happen?",
+        "What is gratuity policy?",
+        "How is tax deducted from salary?",
+
+        # Reimbursement
+        "What expenses can I claim?",
+        "How to submit reimbursement?",
+        "What documents are required for claims?",
+        "What is reimbursement timeline?",
+        "Are meal expenses covered?",
+        "Can I claim travel expenses?",
+        "Is home office setup reimbursed?",
+        "What receipts are needed for reimbursement?",
+
+        # Travel Policy
+        "What is travel policy for employees?",
+        "Can I book business class flight?",
+        "What is hotel allowance?",
+        "How to book travel through company?",
+        "Do we get travel advance?",
+        "What is international travel policy?",
+        "What expenses are covered in business trips?",
+
+        # Remote & Hybrid Work
+        "What is work from home policy?",
+        "How many days remote work allowed?",
+        "What are core hours in remote work?",
+        "Can I work from another city?",
+        "Is full remote allowed?",
+        "What is home office allowance?",
+        "What is expected response time on Slack?",
+        "What is hybrid work model?",
+
+        # Training & Development
+        "What training programs are available?",
+        "Do we get access to online courses?",
+        "Is certification reimbursed?",
+        "What is mentorship program?",
+        "How can I grow in company?",
+        "Are leadership programs available?",
+
+        # Performance & Feedback
+        "How performance review works?",
+        "What is rating system?",
+        "What are OKRs?",
+        "How often reviews happen?",
+        "What is 360 feedback?",
+        "How promotions are decided?",
+        "Can I appeal my rating?",
+
+        # Company Events
+        "What company events are conducted?",
+        "What is annual retreat?",
+        "Are hackathons organized?",
+        "Do we get volunteering days?",
+        "What is company day?",
+        "Are town halls mandatory?",
+
+        # Data Security & Privacy
+        "How is employee data protected?",
+        "What is password policy?",
+        "Can I share company data on WhatsApp?",
+        "What to do in case of data breach?",
+        "How long is employee data stored?",
+        "What is data classification policy?",
+
+        # Exit Policy
+        "What is notice period?",
+        "How to resign from company?",
+        "What is exit process?",
+        "Do we get severance pay?",
+        "What is final settlement process?",
+        "Can I get reference letter?",
+        "What happens to PF after exit?",
+
+        # General / FAQ
+        "How to claim insurance?",
+        "Can I take salary advance?",
+        "How internal transfer works?",
+        "Is gym membership covered?",
+        "What is relocation policy?",
+        "Where can I find HR policies?",
+        "How do I contact HR?",
+        "What are general company policies?",
     ],
 )
-
 # ---------------------------------------------------------------------------
 # 5. Cross-Department Route
 # ---------------------------------------------------------------------------

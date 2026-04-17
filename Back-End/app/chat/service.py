@@ -94,7 +94,7 @@ class ChatService:
         try:
             docs = vector_store.vector_store.similarity_search(
                 query=query, 
-                k=5, 
+                k=6, 
                 filter=filter_condition
             )
         except Exception as e:
@@ -103,16 +103,53 @@ class ChatService:
             
         retrieved_chunks = []
         context_parts = []
-        for d in docs:
-            chunk_dict = dict(d.metadata)
-            chunk_dict["text"] = d.page_content
+        seen_content = set()
+
+        def add_doc(page_content: str, metadata: dict):
+            """Add a unique doc chunk to context, truncated to prevent token overflow."""
+            key = page_content[:120]  # Deduplication key
+            if key in seen_content:
+                return
+            seen_content.add(key)
+            chunk_dict = dict(metadata)
+            chunk_dict["text"] = page_content
             retrieved_chunks.append(chunk_dict)
-            
             src = chunk_dict.get("source_document", "Unknown Source")
             page = chunk_dict.get("page_number", "N/A")
-            context_parts.append(f"[Source: {src}, Page {page}]\n{d.page_content}")
-            
+            truncated = page_content[:1500]
+            context_parts.append(f"[Source: {src}, Page {page}]\n{truncated}")
+
+        # --- Semantic results (primary) ---
+        for d in docs:
+            add_doc(d.page_content, d.metadata)
+
+        # --- Keyword fallback (secondary) ---
+        # Extract meaningful words from the query to catch buried specific facts
+        import re
+        stop_words = {"how", "many", "what", "are", "is", "the", "a", "an", "do", "does",
+                      "tell", "me", "about", "please", "pls", "allowed", "get", "give", "show"}
+        keywords = [
+            w for w in re.findall(r"\b[a-zA-Z]{3,}\b", query.lower())
+            if w not in stop_words
+        ][:4]  # Cap at 4 keywords
+
+        if keywords:
+            kw_results = vector_store.keyword_search(
+                keywords=keywords,
+                collection_filter=collections,
+                role_filter=role,
+                limit=3,
+            )
+            for point in kw_results:
+                payload = point.payload or {}
+                page_content = payload.get("page_content", "")
+                metadata = payload.get("metadata", {})
+                if page_content:
+                    add_doc(page_content, metadata)
+
+        # Hard cap: stay within safe token budget
         context_str = "\n\n".join(context_parts)
+        context_str = context_str[:6000]
         
         # Fetch conversation summary context
         chat_summary = history_service.get_summary(session_id)
@@ -120,8 +157,12 @@ class ChatService:
 
         # 4. LLM Generation
         prompt = f"""You are FinBot, a professional AI assistant for FinSolve Technologies.
-Answer the question based ONLY on the provided context. If the context does not contain the answer, say "I cannot answer this based on the available documentation."
-Whenever you use information from the context, YOU MUST cite your sources explicitly in your text using the format [Source: filename, Page X].
+
+Your job is to answer employee questions using ONLY the information provided below in the Context section.
+- Synthesize and summarize the relevant information clearly and helpfully.
+- Always cite your sources inline using this exact format: [Source: filename, Page X]
+- If multiple pages support the answer, cite them all.
+- Only say you cannot answer if there is genuinely NO relevant information in the context at all.
 
 {summary_text}Context:
 {context_str}

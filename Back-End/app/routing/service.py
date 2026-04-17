@@ -84,13 +84,22 @@ class RoutingService:
         # If the user explicitly mentions a department, we can prioritize that
         # route over the semantic embeddings, especially if it aligns with their role.
         query_lower = query.lower()
-        if "finance" in query_lower or "financial" in query_lower:
+        if "finance" in query_lower or "financial" in query_lower or "revenue" in query_lower or "profit" in query_lower or "budget" in query_lower:
             route_name = "finance_route"
-        elif "marketing" in query_lower:
+        elif "marketing" in query_lower or "campaign" in query_lower or "brand" in query_lower:
             route_name = "marketing_route"
-        elif "engineering" in query_lower:
+        elif "engineering" in query_lower or "architecture" in query_lower or "deployment" in query_lower or "kubernetes" in query_lower:
             route_name = "engineering_route"
-        elif "hr " in query_lower or "human resources" in query_lower or "hr" == query_lower:
+        elif (
+            "hr " in query_lower or "human resources" in query_lower or "hr" == query_lower
+            or "leave" in query_lower or "leaves" in query_lower
+            or "policy" in query_lower or "policies" in query_lower
+            or "handbook" in query_lower or "benefit" in query_lower
+            or "vacation" in query_lower or "sick day" in query_lower
+            or "holiday" in query_lower or "time off" in query_lower
+            or "maternity" in query_lower or "paternity" in query_lower
+            or "attendance" in query_lower or "employee" in query_lower
+        ):
             route_name = "hr_general_route"
 
         # 2. Handle unclassified queries

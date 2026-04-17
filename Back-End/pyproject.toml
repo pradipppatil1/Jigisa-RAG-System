@@ -28,5 +28,6 @@ dependencies = [
     "email-validator",
     "ragas",
     "datasets",
-    "pandas"
+    "pandas",
+    "pypdf>=6.10.2",
 ]

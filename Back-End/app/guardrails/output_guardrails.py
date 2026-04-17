@@ -39,8 +39,17 @@ def check_source_citations(
 ) -> GuardrailCheckResult:
     """
     Check if the LLM response contains at least one source citation.
-    If not, append a warning with retrieved chunk sources.
+    Citations can appear either inline in the response text (via patterns)
+    or as metadata displayed separately in the UI via retrieved_chunks.
     """
+    # If citations are shown in the UI via retrieved_chunks, that's sufficient
+    if retrieved_chunks:
+        return GuardrailCheckResult(
+            guardrail="source_citation",
+            status="allowed",
+        )
+
+    # No chunks retrieved at all — check the response text for inline citations
     for pattern in _CITATION_PATTERNS:
         if pattern.search(response):
             return GuardrailCheckResult(
@@ -48,27 +57,13 @@ def check_source_citations(
                 status="allowed",
             )
 
-    # No citation found — build a warning with available sources
-    source_info = ""
-    if retrieved_chunks:
-        sources = set()
-        for chunk in retrieved_chunks:
-            # Metadata is typically nested under 'metadata' in LangChain Qdrant points
-            # but ChatService flattens it. We handle both to be safe.
-            msg_meta = chunk.get("metadata", chunk)
-            doc = msg_meta.get("source_document", "Unknown")
-            page = msg_meta.get("page_number", "?")
-            sources.add(f"{doc} (Page {page})")
-        if sources:
-            source_info = " The information was drawn from: " + ", ".join(sources) + "."
-
     return GuardrailCheckResult(
         guardrail="source_citation",
         status="warning",
         reason="missing_citations",
         message=(
-            "⚠️ Note: This response does not cite specific source documents."
-            f"{source_info}"
+            "⚠️ Note: This response was generated without any source documents. "
+            "Please verify the information independently."
         ),
     )
 
